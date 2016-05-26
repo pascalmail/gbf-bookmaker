@@ -1,3 +1,19 @@
+
+function cleanPoints(points) {
+  var cleanedPoints = [];
+  var j = 0;
+  for (i=0; i < points.length; ++i) {
+    if (points[i].pts == null || points[i].pts == undefined || points[i].pts.length < 4) {
+
+    }
+    else {
+      cleanedPoints.push(points[i]);
+    }
+  }
+
+  return cleanedPoints;
+};
+
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('form').onsubmit = yo;
 
@@ -25,6 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
 });
+
+
 
 function yo() {
   var status = document.getElementById('status');
