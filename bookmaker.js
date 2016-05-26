@@ -100,9 +100,9 @@ function updatePoints() {
     var lastPts;
     for (i=0; i < points.length; ++i) {
       // remove incomplete data
-      console.info("pts",i, points[i].pts);
+      // console.info("pts",i, points[i].pts);
       if (points[i].pts == null || points[i].pts == undefined || points[i].pts.length < 4) {
-        console.info("JELEEEK");
+        // console.info("JELEEEK");
       }
       else {
         // check if the points is the same as the point s before
