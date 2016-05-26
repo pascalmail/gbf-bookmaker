@@ -1,3 +1,5 @@
+"use strict";
+
 // selector is CSS selector, time in ms
 function waitForElementToDisplay(selector, time, callback) {
   if (document.querySelector(selector) != null) {
@@ -36,7 +38,7 @@ function prettyPrintPoint(points) {
   var hour = 4;
   var min = 40;
   // console.info("arr len", points.length);
-  for(i=0; i < points.length && hour < 24; ) {
+  for(var i=0; i < points.length && hour < 24; ) {
     min = min + 20;
     if (min == 60) {
       min = 0;
@@ -54,7 +56,7 @@ function prettyPrintPoint(points) {
     // console.info(th, tm, hour, min, i);
     // console.info(th==hour, tm==min);
     if (hour === th && tm === min) {
-      for (j = 0; j < points[i].pts.length; ++j) {
+      for (var j = 0; j < points[i].pts.length; ++j) {
         s = s + ","+points[i].pts[j];
       }
       i++;
@@ -98,7 +100,7 @@ function updatePoints() {
     var cleanedPoints = [];
     var j = 0;
     var lastPts;
-    for (i=0; i < points.length; ++i) {
+    for (var i=0; i < points.length; ++i) {
       // remove incomplete data
       // console.info("pts",i, points[i].pts);
       if (points[i].pts == null || points[i].pts == undefined || points[i].pts.length < 4) {
@@ -147,7 +149,7 @@ function updatePoints() {
       var lastPoint = points[points.length - 1];
       // if the last point saved not equals to point now, save it
       var same = true;
-      for(i = 0; i < lastPoint.pts.length; i++) {
+      for(var i = 0; i < lastPoint.pts.length; i++) {
         same = same && (lastPoint.pts[i] == newPoint.pts[i]);
       }
       // console.info("is Same ", same);
