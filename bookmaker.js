@@ -19,7 +19,7 @@ function hashChanged() {
 
   // set the hash to present hash
   hash = location.hash;
-  console.info("hash: "+location.hash);  
+  console.info("found hash: "+location.hash);  
 
   // jalankan kode jika ada di halaman bookmaker
   if (hash == bookmakerHash) {
@@ -31,7 +31,7 @@ function hashChanged() {
 }
 
 function prettyPrintPoint(points) {
-  console.info("pretty start");
+  // console.info("pretty start");
   var s = "";
   var hour = 4;
   var min = 40;
@@ -52,7 +52,7 @@ function prettyPrintPoint(points) {
     var tm = Math.floor(t.getMinutes()/20)*20;
     // console.info("point", "loop", i);
     // console.info(th, tm, hour, min, i);
-    console.info(th==hour, tm==min);
+    // console.info(th==hour, tm==min);
     if (hour === th && tm === min) {
       for (j = 0; j < points[i].pts.length; ++j) {
         s = s + ","+points[i].pts[j];
@@ -64,7 +64,7 @@ function prettyPrintPoint(points) {
     }
     s += "\n";
   }
-  console.info("pretty end");
+  // console.info("pretty end");
   return s;
 }
 
@@ -88,6 +88,7 @@ function updatePoints() {
       // var ps = points.map(function(obj) { var t = new Date(obj.time); return (t.getHours() + ":" + t.getMinutes() + "," + obj.pts.join()); }).join("\n");
       var ps = prettyPrintPoint(points);
       console.info("UTC+7,N,W,E,S\n"+ ps);
+      console.info("completed at: ", new Date());
     });
 
   };
@@ -99,8 +100,9 @@ function updatePoints() {
     var lastPts;
     for (i=0; i < points.length; ++i) {
       // remove incomplete data
+      console.info("pts",i, points[i].pts);
       if (points[i].pts == null || points[i].pts == undefined || points[i].pts.length < 4) {
-        // console.info("JELEEEK");
+        console.info("JELEEEK");
       }
       else {
         // check if the points is the same as the point s before
@@ -135,10 +137,10 @@ function updatePoints() {
       time: Date.now(),
       pts: Array.prototype.slice.call(document.querySelectorAll(".point")).map(function(obj) {return obj.innerHTML;})
     }
-
+    console.info("points now!!", newPoint.pts);
     if(points == undefined) {
       points = [];
-      points.push(newPoint);
+      if(newPoint.pts.length == 4) points.push(newPoint);
     }
     else {
       points = cleanPoints(points);
@@ -150,7 +152,7 @@ function updatePoints() {
       }
       // console.info("is Same ", same);
       if (!same) {
-        points.push(newPoint);
+        if(newPoint.pts.length == 4) points.push(newPoint);
       }
     }
     savePoints(points);
@@ -163,7 +165,9 @@ function updatePoints() {
 console.info("hash: "+location.hash);  
 //register the event when hash location is changed
 window.onhashchange = hashChanged;
-window.onload = function(){
+window.onload = function() {
   console.info("onload");
-  window.onhashchange();
-}
+  hashChanged();
+};
+
+hashChanged();
