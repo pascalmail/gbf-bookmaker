@@ -1,9 +1,11 @@
 "use strict";
 
+//=========== HELPER
+
 // selector is CSS selector, time in ms
 function waitForElementToDisplay(selector, time, callback) {
   if (document.querySelector(selector) != null) {
-    // console.info("selector found");
+    console.info("selector found");
     callback();
     return;
   }
@@ -15,22 +17,6 @@ function waitForElementToDisplay(selector, time, callback) {
   }
 };
 
-function hashChanged() {
-  var bookmakerHash = "#event/teamraid021/bookmaker";
-  var hash = "";
-
-  // set the hash to present hash
-  hash = location.hash;
-  console.info("found hash: "+location.hash);  
-
-  // jalankan kode jika ada di halaman bookmaker
-  if (hash == bookmakerHash) {
-    // tunggu sampai halamannya ketemu
-    console.info("waiting");
-    waitForElementToDisplay(".point", 1000, updatePoints); 
-    setTimeout(function() {location.reload(true);}, 5*60000);
-  }
-}
 
 function prettyPrintPoint(points) {
   // console.info("pretty start");
@@ -70,8 +56,41 @@ function prettyPrintPoint(points) {
   return s;
 }
 
-function updatePoints() {
-  function readPoints(callback) {
+//=========== MAIN
+function hashChanged() {
+  var bookmakerHash = "#event/teamraid021/bookmaker";
+  var hash = "";
+
+  // set the hash to present hash
+  hash = location.hash;
+  console.info("found hash: "+location.hash);  
+
+  // jalankan kode jika ada di halaman bookmaker
+  if (hash == bookmakerHash) {
+    // tunggu sampai halamannya ketemu
+    console.info("waiting");
+    waitForElementToDisplay(".point", 1000, updatePoints); 
+
+    function waitRefresh() {
+      var now = new Date();
+      var h = (now.getUTCHours()+7)%24;
+      if (h < 5 || h > 22) {
+        console.info("wait refresh until ", h, now.getMinutes() + 5);
+        setTimeout(function() {
+          waitRefresh();
+        }, 5*60*1000);
+      }
+      else {
+        console.info("Reload page at ", h, now.getMinutes() + 10);
+        setTimeout(function() {location.reload();}, 10*60000);
+      }
+    };
+    waitRefresh();
+    // setTimeout(function() {location.reload();}, 10*60000);
+  }
+}
+
+function readPoints(callback) {
     chrome.storage.local.get("points", callback);
   };
 
@@ -88,88 +107,111 @@ function updatePoints() {
       // console.info(points[0]);
       // console.info(points[0].time);
       // var ps = points.map(function(obj) { var t = new Date(obj.time); return (t.getHours() + ":" + t.getMinutes() + "," + obj.pts.join()); }).join("\n");
-      var ps = prettyPrintPoint(points);
-      console.info("UTC+7,N,W,E,S\n"+ ps);
-      console.info("completed at: ", new Date());
+      console.info("New points saved at : ", new Date());
     });
 
   };
 
-  function cleanPoints(points) {
-    console.info("start cleaning", points);
-    var cleanedPoints = [];
-    var j = 0;
-    var lastPts;
-    for (var i=0; i < points.length; ++i) {
-      // remove incomplete data
-      // console.info("pts",i, points[i].pts);
-      if (points[i].pts == null || points[i].pts == undefined || points[i].pts.length < 4) {
-        // console.info("JELEEEK");
-      }
-      else {
-        // check if the points is the same as the point s before
-        if (lastPts != null || lastPts != undefined) {
-          // console.info("ADA?");
-          var tn = new Date(points[i].time);
-          var tl = new Date(lastPts.time);
-          // console.info("HEY", tn.getHours(), tl.getHours());
-          // console.info("HEY", Math.floor(tn.getMinutes()/20), Math.floor(tl.getMinutes()/20));
-          if(tn.getHours() == tl.getHours() && Math.floor(tn.getMinutes()/20) == Math.floor(tl.getMinutes()/20)) {
-            // console.info("SAMAAMAMA", tn, tl);
-          }
-          else {
+function cleanPoints(points) {
+  console.info("start cleaning", points);
+  var cleanedPoints = [];
+  var j = 0;
+  var lastPts;
+  for (var i=0; i < points.length; ++i) {
+    // remove incomplete data
+    // console.info("pts",i, points[i].pts);
+    if (points[i].pts == null || points[i].pts == undefined || points[i].pts.length < 4) {
+      // console.info("JELEEEK");
+    }
+    else {
+      // check if the points is the same as the point s before
+      if (lastPts != null || lastPts != undefined) {
+        // console.info("ADA?");
+        var tn = new Date(points[i].time);
+        var tl = new Date(lastPts.time);
+        // console.info("HEY", tn.getHours(), tl.getHours());
+        // console.info("HEY", Math.floor(tn.getMinutes()/20), Math.floor(tl.getMinutes()/20));
+        if(tn.getHours() == tl.getHours() && Math.floor(tn.getMinutes()/20) == Math.floor(tl.getMinutes()/20)) {
+          // console.info("SAMAAMAMA", tn, tl);
+        }
+        else {
+          if (tn.getHours() >=5 || tn.getHours() <=22) {
             cleanedPoints.push(points[i]);
             lastPts = points[i];
           }
         }
-        else {
+      }
+      else {
+        var tn = new Date(points[i].time);
+        if (tn.getHours() >=5 || tn.getHours() <=22) {
           cleanedPoints.push(points[i]);
-            lastPts = points[i];
+          lastPts = points[i];
         }
       }
     }
+  }
 
-    return cleanedPoints;
-  };
+  return cleanedPoints;
+};
 
-  function processPoints(points) {
-    points = points.points;
+function processPoints(points) {
+  points = points.points;
+  console.info("points read from storage", points);
 
-    var newPoint = {
-      time: Date.now(),
-      pts: Array.prototype.slice.call(document.querySelectorAll(".point")).map(function(obj) {return obj.innerHTML;})
+  var newPoint = {
+    time: Date.now(),
+    pts: Array.prototype.slice.call(document.querySelectorAll(".point")).map(function(obj) {return obj.innerHTML;})
+  }
+  console.info("points now!!", newPoint.pts);
+
+  var haveNew = false;
+  var h = (new Date().getUTCHours() + 7)%24;
+  if(points == undefined) {
+    points = [];
+    if(newPoint.pts.length == 4 && h >= 5 && h <= 22) {
+      haveNew = true;
+      points.push(newPoint);
     }
-    console.info("points now!!", newPoint.pts);
-    if(points == undefined) {
-      points = [];
-      if(newPoint.pts.length == 4) points.push(newPoint);
+  }
+  else {
+    points = cleanPoints(points);
+
+    var lastPoint = points[points.length - 1];
+    // if the last point saved not equals to point now, save it
+    var same = true;
+    for(var i = 0; i < lastPoint.pts.length; i++) {
+      same = same && (lastPoint.pts[i] == newPoint.pts[i]);
     }
-    else {
-      points = cleanPoints(points);
-      var lastPoint = points[points.length - 1];
-      // if the last point saved not equals to point now, save it
-      var same = true;
-      for(var i = 0; i < lastPoint.pts.length; i++) {
-        same = same && (lastPoint.pts[i] == newPoint.pts[i]);
+    // console.info("is Same ", same);
+    if (!same) {
+      if(newPoint.pts.length == 4 && h >= 5 && h <= 22) {
+        haveNew = true;
+        points.push(newPoint);
       }
-      // console.info("is Same ", same);
-      if (!same) {
-        if(newPoint.pts.length == 4) points.push(newPoint);
-      }
     }
-    savePoints(points);
-  };
-  // console.info("jalan");
-  readPoints(processPoints);
-  // deletePoints();
+  }
+  var ps = prettyPrintPoint(points);
+  console.info("UTC+7,N,W,E,S\n"+ ps);
+  if (haveNew) savePoints(points);
+};
+
+
+function updatePoints() {
+  
+  var t = new Date();
+  var h = (t.getUTCHours() + 7)%24;
+  var m = t.getMinutes();
+  // if (h >=5 && h <=22 ) {
+    readPoints(processPoints);
+  // }
 }
 
 console.info("hash: "+location.hash);  
 //register the event when hash location is changed
 window.onhashchange = hashChanged;
-window.onload = function() {
-  console.info("onload");
-  hashChanged();
-};
+// window.onload = function() {
+//   console.info("onload");
+//   hashChanged();
+// };
 
 hashChanged();
