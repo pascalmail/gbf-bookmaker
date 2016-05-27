@@ -30,7 +30,8 @@ function prettyPrintPoint(points) {
       min = 0;
       hour = hour + 1;
     }
-    s = s + hour+":"+min;
+
+    var tmps = hour+":"+min;
 
     var t = new Date(points[i].time);
     var offset = 0-(t.getTimezoneOffset()/60);
@@ -42,15 +43,17 @@ function prettyPrintPoint(points) {
     // console.info(th, tm, hour, min, i);
     // console.info(th==hour, tm==min);
     if (hour === th && tm === min) {
+      tmps = th+":"+t.getMinutes()+","+tmps;
       for (var j = 0; j < points[i].pts.length; ++j) {
-        s = s + ","+points[i].pts[j];
+        tmps = tmps + ","+points[i].pts[j];
       }
       i++;
+      tmps += "\n";
     }
     else {
-      s = s + ",-,-,-,-";
+      tmps = "-," + tmps + ",-,-,-,-\n";
     }
-    s += "\n";
+    s += tmps;
   }
   // console.info("pretty end");
   return s;
@@ -87,6 +90,14 @@ function hashChanged() {
     };
     waitRefresh();
     // setTimeout(function() {location.reload();}, 10*60000);
+  }
+  else {
+    var loc = location.origin+"/#event/teamraid021/bookmaker";
+    console.info("redirect to", loc, "in 1 minute");
+    setTimeout(function () {
+      console.info("redirect to", loc, "in 1 minute");
+      location.assign(loc);
+    }, 60*1000);
   }
 }
 

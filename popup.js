@@ -17,6 +17,8 @@ function cleanPoints(points) {
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('form').onsubmit = yo;
 
+  document.getElementById('form2').onsubmit = saveOld;
+
   var status = document.getElementById('status');
   var stVal = status.getAttribute('value');
 
@@ -24,9 +26,15 @@ document.addEventListener('DOMContentLoaded', function() {
    status.setAttribute('value', 'enable');
   }
 
+  chrome.storage.local.get("key", function(points) {
+    console.info("oldpoints", points);
+  });
+
   var table = document.getElementById("table");
   chrome.storage.local.get("points", function(points) {
+
     points = points.points;
+    // if 
     console.info(points);
     for(i = 0; i < points.length; ++i) {
       var row = table.insertRow();
@@ -42,7 +50,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-
+function saveOld() {
+  chrome.storage.local.get("points", function(points) {
+    var t = new Date(points.points[0]);
+    var day = t.getDate() + "-" + t.getMonth() + "-" + t.getHours();
+    var key = "points-"+day;
+    var pts = {};
+    pts[key] = points;
+    chrome.storage.local.set(pts);
+    chrome.storage.local.remove("points");
+  });
+}
 
 function yo() {
   var status = document.getElementById('status');
