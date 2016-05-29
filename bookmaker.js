@@ -1,7 +1,7 @@
 "use strict";
 
 //=========== HELPER
-
+// var run = false;
 // selector is CSS selector, time in ms
 function waitForElementToDisplay(selector, time, callback) {
   if (document.querySelector(selector) != null) {
@@ -61,6 +61,7 @@ function prettyPrintPoint(points) {
 
 //=========== MAIN
 function hashChanged() {
+  // run = true;
   var bookmakerHash = "#event/teamraid021/bookmaker";
   var hash = "";
 
@@ -77,11 +78,13 @@ function hashChanged() {
     function waitRefresh() {
       var now = new Date();
       var h = (now.getUTCHours()+7)%24;
+      var m = now.getMinutes();
       if (h < 5 || h > 22) {
+        if (((m+5)%15) < 5) {
+          setTimeout(location.reload, 5*60*1000);
+        }
         console.info("wait refresh until ", h, now.getMinutes() + 5);
-        setTimeout(function() {
-          waitRefresh();
-        }, 5*60*1000);
+        setTimeout(waitRefresh, 5*60*1000);
       }
       else {
         console.info("Reload page at ", h, now.getMinutes() + 10);
@@ -103,25 +106,25 @@ function hashChanged() {
 
 function readPoints(callback) {
     chrome.storage.local.get("points", callback);
-  };
+};
 
-  function deletePoints() {
-   chrome.storage.local.remove("points", function() {
-    console.info("Old points deleted");
-   }); 
-  };
+function deletePoints() {
+ chrome.storage.local.remove("points", function() {
+  console.info("Old points deleted");
+ }); 
+};
 
-  function savePoints(points) {
-    chrome.storage.local.set({"points": points}, function() {
-      console.info("New points saved");
-      console.info(points);
-      // console.info(points[0]);
-      // console.info(points[0].time);
-      // var ps = points.map(function(obj) { var t = new Date(obj.time); return (t.getHours() + ":" + t.getMinutes() + "," + obj.pts.join()); }).join("\n");
-      console.info("New points saved at : ", new Date());
-    });
+function savePoints(points) {
+  chrome.storage.local.set({"points": points}, function() {
+    console.info("New points saved");
+    console.info(points);
+    // console.info(points[0]);
+    // console.info(points[0].time);
+    // var ps = points.map(function(obj) { var t = new Date(obj.time); return (t.getHours() + ":" + t.getMinutes() + "," + obj.pts.join()); }).join("\n");
+    console.info("New points saved at : ", new Date());
+  });
 
-  };
+};
 
 function cleanPoints(points) {
   console.info("start cleaning", points);
@@ -219,10 +222,11 @@ function updatePoints() {
 
 console.info("hash: "+location.hash);  
 //register the event when hash location is changed
-window.onhashchange = hashChanged;
-// window.onload = function() {
-//   console.info("onload");
-//   hashChanged();
-// };
+window.onhashchange = function() {
+  console.info("onload");
+
+  // if(run == false) 
+  hashChanged();
+};
 
 hashChanged();
