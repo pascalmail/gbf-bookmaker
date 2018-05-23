@@ -1,4 +1,4 @@
-
+// this is a comment
 function cleanPoints(points) {
   var cleanedPoints = [];
   var j = 0;
